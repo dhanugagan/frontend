@@ -7,6 +7,7 @@ import { Card, CardHeader, PageHeader } from "@/components/Card";
 import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { DetailPanel, KV } from "@/components/DetailPanel";
 import { Field, SearchInput, SegmentedControl, Select } from "@/components/Inputs";
+import { TiltCard } from "@/components/MotionPrimitives";
 import { EmptyState, ErrorState, Notice, Spinner } from "@/components/States";
 import { useApp } from "@/hooks/AppContext";
 import { useAsync } from "@/hooks/useAsync";
@@ -48,12 +49,12 @@ export default function AlertsPage() {
 
   const cols: Column<Alert>[] = [
     { key: "sev", header: "Severity", sortKey: "severity", render: (a) => <SeverityBadge severity={a.severity} /> },
-    { key: "tx", header: "Transaction", sortKey: "tx_id", render: (a) => <span className="num text-slate-100">{a.tx_id}</span> },
+    { key: "tx", header: "Transaction", sortKey: "tx_id", render: (a) => <span className="num text-cloud">{a.tx_id}</span> },
     { key: "p", header: "Probability", sortKey: "probability", render: (a) => <span className="num">{fmtProb(a.probability)}</span> },
-    { key: "m", header: "Model", render: (a) => <span className="text-xs text-slate-300">{a.model_family ?? a.model_id}</span> },
+    { key: "m", header: "Model", render: (a) => <span className="text-xs text-silver">{a.model_family ?? a.model_id}</span> },
     { key: "t", header: "Time step", sortKey: "time_step", render: (a) => <span className="num">{a.time_step ?? "—"}</span> },
     { key: "o", header: "Origin", render: (a) => <Badge tone={a.origin === "session_prediction" ? "model" : "neutral"}>{a.origin === "session_prediction" ? "live session" : "stored output"}</Badge> },
-    { key: "ts", header: "Timestamp", sortKey: "timestamp", render: (a) => <span className="text-xs text-slate-400">{a.timestamp ? fmtDate(a.timestamp) : "n/a"}</span> },
+    { key: "ts", header: "Timestamp", sortKey: "timestamp", render: (a) => <span className="text-xs text-silver">{a.timestamp ? fmtDate(a.timestamp) : "n/a"}</span> },
   ];
   const onSort = (key: string) => setSort((s) => (s.key === key ? { key: s.key, order: s.order === "asc" ? "desc" : "asc" } : { key: key as SortKey, order: "desc" }));
   const reset = () => { setSource(""); setSeverity(""); setFamily(""); setMinP(""); setTxq(""); setStep(""); };
@@ -61,12 +62,14 @@ export default function AlertsPage() {
   return (
     <>
       <PageHeader title="Fraud Alerts" description="Alerts derived from actual prediction outputs: transactions predicted illicit at a model's own threshold. There is no database — stored-output alerts are re-derived from artifacts; live-session alerts exist in memory only." />
-      <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {(["critical", "high", "medium"] as Severity[]).map((s) => (
-          <button key={s} onClick={() => setSeverity(severity === s ? "" : s)} aria-pressed={severity === s} className={`card px-4 py-3 text-left transition hover:bg-white/[0.04] ${severity === s ? "ring-1 ring-brand-400/50" : ""}`}>
-            <p className="eyebrow flex items-center gap-2"><i className="h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[s] }} />{s}</p>
-            <p className="num mt-1 text-2xl font-semibold text-white">{d ? fmtInt(d.severity_counts[s]) : "…"}</p>
-          </button>
+          <TiltCard key={s} intensity={4} glowColor={`${SEVERITY_COLOR[s]}26`}>
+            <button onClick={() => setSeverity(severity === s ? "" : s)} aria-pressed={severity === s} className={`w-full rounded-xl px-4 py-3.5 text-left transition hover:bg-white/[0.03] ${severity === s ? "ring-1 ring-brand-500/60" : ""}`}>
+              <p className="eyebrow flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[s] }} />{s}</p>
+              <p className="num mt-1.5 text-2xl font-bold text-cloud">{d ? fmtInt(d.severity_counts[s]) : "…"}</p>
+            </button>
+          </TiltCard>
         ))}
       </div>
 
@@ -76,9 +79,9 @@ export default function AlertsPage() {
           <Field label="Prediction source"><Select label="Prediction source" value={source} onChange={setSource} disabled={origin === "session"} options={[{ value: "", label: "Default source" }, { value: "all", label: "All sources" }, ...(sources.data?.sources ?? []).map((s) => ({ value: s.source_id, label: `${s.model_id} · ${s.experiment}` }))]} /></Field>
           <Field label="Model family"><Select label="Model family" value={family} onChange={setFamily} options={[{ value: "", label: "Any" }, ...families.map((f) => ({ value: f, label: f }))]} /></Field>
           <Field label="Severity"><Select label="Severity" value={severity} onChange={(v) => setSeverity(v as "" | Severity)} options={[{ value: "", label: "Any" }, { value: "critical", label: "Critical" }, { value: "high", label: "High" }, { value: "medium", label: "Medium" }]} /></Field>
-          <Field label="Min. probability" hint={minP !== "" && pNum === undefined ? "0 – 1" : undefined}><input aria-label="Minimum probability" className="input w-28" inputMode="decimal" value={minP} onChange={(e) => setMinP(e.target.value)} placeholder="0.0" /></Field>
-          <Field label="Time step" hint={step !== "" && stepNum === undefined ? "1 – 49" : undefined}><input aria-label="Time step" className="input w-24" inputMode="numeric" value={step} onChange={(e) => setStep(e.target.value)} placeholder="1–49" /></Field>
-          <Field label="Transaction ID"><SearchInput label="Transaction ID" value={txq} onChange={setTxq} inputMode="numeric" placeholder="exact id" className="w-44" /></Field>
+          <Field label="Min. probability" hint={minP !== "" && pNum === undefined ? "0 – 1" : undefined}><input aria-label="Minimum probability" className={`input w-28 ${minP !== "" && pNum === undefined ? "border-fraud-400/60" : ""}`} inputMode="decimal" value={minP} onChange={(e) => setMinP(e.target.value)} placeholder="0.0" /></Field>
+          <Field label="Time step" hint={step !== "" && stepNum === undefined ? "1 – 49" : undefined}><input aria-label="Time step" className={`input w-24 ${step !== "" && stepNum === undefined ? "border-fraud-400/60" : ""}`} inputMode="numeric" value={step} onChange={(e) => setStep(e.target.value)} placeholder="1–49" /></Field>
+          <Field label="Transaction ID"><SearchInput label="Transaction ID" value={txq} onChange={setTxq} inputMode="numeric" placeholder="exact id" className="w-full sm:w-44" /></Field>
           <Button variant="ghost" onClick={reset}>Reset</Button>
         </div>
       </Card>
@@ -95,7 +98,7 @@ export default function AlertsPage() {
               <Pagination page={d.page} pages={d.pages} total={d.total} pageSize={PAGE_SIZE} onPage={setPage} noun="alerts" />
             </>
           )}
-          {d && <p className="border-t border-white/[0.06] px-4 py-2 text-[11px] text-slate-500">{d.storage_note}</p>}
+          {d && <p className="border-t border-white/[0.06] px-4 py-2 text-[11px] text-silver">{d.storage_note}</p>}
         </Card>
         <div className="xl:sticky xl:top-20 xl:self-start">
           {selected ? (
@@ -112,7 +115,7 @@ export default function AlertsPage() {
                 <KV label="Status">Active (derived)</KV>
               </dl>
               {selected.evaluation_context && <div className="mt-3"><Notice tone="info" title="Evaluation context">{selected.evaluation_context}</Notice></div>}
-              <p className="mt-3 text-[11px] text-slate-500">Severity = margin above the model's threshold. Alerts are indicators for investigation, not proof of fraud; the backend keeps no acknowledgement state.</p>
+              <p className="mt-3 text-[11px] text-silver">Severity = margin above the model&apos;s threshold. Alerts are indicators for investigation, not proof of fraud; the backend keeps no acknowledgement state.</p>
               <div className="mt-4 flex gap-2"><Button size="sm" variant="primary" onClick={() => nav(`/transactions?tx=${selected.tx_id}`)} icon={<ScanSearch className="h-3.5 w-3.5" />}>Open transaction</Button><Button size="sm" onClick={() => nav(`/graph?tx=${selected.tx_id}`)} icon={<Network className="h-3.5 w-3.5" />}>View graph</Button></div>
             </DetailPanel>
           ) : <Card><EmptyState icon={<BellRing className="h-5 w-5" />} title="Select an alert" description="Click a row for the model output behind it." /></Card>}

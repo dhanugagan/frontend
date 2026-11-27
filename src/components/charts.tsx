@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts";
 import { COLORS, SERIES } from "@/utils/palette";
 
-const tooltipStyle = { background: "#0a1220", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12, color: "#e2e8f0" };
+const tooltipStyle = { background: "#050507", border: "1px solid rgba(163,230,53,0.34)", borderRadius: 10, fontSize: 12, color: "#ffffff", boxShadow: "0 14px 30px -8px rgba(0,0,0,0.92)" };
 const axisProps = { stroke: COLORS.axis, fontSize: 11, tickLine: false, axisLine: { stroke: COLORS.grid } } as const;
 
 export function ChartFrame({ height = 260, children, label }: { height?: number; children: ReactNode; label: string }) {
@@ -37,15 +37,15 @@ export function DonutChart({ data, label, center }: { data: Slice[]; label: stri
       </ChartFrame>
       {center && (
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="num text-lg font-semibold text-white">{center.top}</span>
-          <span className="text-[11px] text-slate-400">{center.bottom}</span>
+          <span className="num text-lg font-semibold text-cloud">{center.top}</span>
+          <span className="text-[11px] text-silver">{center.bottom}</span>
         </div>
       )}
-      <ul className="mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-300">
+      <ul className="mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-cloud/85">
         {data.map((d) => (
           <li key={d.name} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-            {d.name} <span className="num text-slate-400">{d.value.toLocaleString()}</span>
+            {d.name} <span className="num text-silver">{d.value.toLocaleString()}</span>
           </li>
         ))}
       </ul>
@@ -65,7 +65,7 @@ export function StackedBars({ data, series, label, height = 240 }: { data: Stack
         <CartesianGrid stroke={COLORS.grid} vertical={false} />
         <XAxis dataKey="name" {...axisProps} />
         <YAxis {...axisProps} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(163,230,53,0.08)" }} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         {series.map((s) => (
           <Bar key={s.key} dataKey={s.key} name={s.name} stackId="a" fill={s.color} isAnimationActive={false} />
@@ -87,10 +87,10 @@ export function GroupedBars({ data, series, label, height = 300, domain = [0, 1]
         <CartesianGrid stroke={COLORS.grid} vertical={false} />
         <XAxis dataKey="name" {...axisProps} interval={0} tick={{ fontSize: 10, fill: COLORS.axis }} />
         <YAxis {...axisProps} domain={domain} tickFormatter={(v) => v.toFixed(1)} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} formatter={(v) => (typeof v === "number" ? v.toFixed(3) : "—")} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(163,230,53,0.08)" }} formatter={(v) => (typeof v === "number" ? v.toFixed(3) : "—")} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         {series.map((s, i) => (
-          <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color ?? SERIES[i % SERIES.length]} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+          <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color ?? SERIES[i % SERIES.length]} radius={[4, 4, 0, 0]} isAnimationActive={false} />
         ))}
       </BarChart>
     </ChartFrame>
@@ -105,24 +105,24 @@ export function TimeStepChart({ data, label }: { data: { step: number; illicit: 
         <XAxis dataKey="step" {...axisProps} interval={3} label={{ value: "time step", position: "insideBottom", offset: -2, fill: COLORS.axis, fontSize: 11 }} />
         <YAxis yAxisId="l" {...axisProps} />
         <YAxis yAxisId="r" orientation="right" {...axisProps} tickFormatter={(v) => `${v}%`} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(163,230,53,0.08)" }} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar yAxisId="l" dataKey="illicit" name="Illicit transactions" fill={COLORS.illicit} fillOpacity={0.85} radius={[2, 2, 0, 0]} isAnimationActive={false} />
-        <Line yAxisId="r" dataKey="share" name="Illicit % of all nodes" stroke={COLORS.brand} strokeWidth={2} dot={false} isAnimationActive={false} />
+        <Bar yAxisId="l" dataKey="illicit" name="Illicit transactions" fill={COLORS.illicit} fillOpacity={0.85} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+        <Line yAxisId="r" dataKey="share" name="Illicit % of all nodes" stroke={COLORS.brand} strokeWidth={2.2} dot={false} isAnimationActive={false} />
       </ComposedChart>
     </ChartFrame>
   );
 }
 
-export function HistogramChart({ data, label, color = COLORS.model, height = 220 }: { data: { bin: string; count: number }[]; label: string; color?: string; height?: number }) {
+export function HistogramChart({ data, label, color = COLORS.brand, height = 220 }: { data: { bin: string; count: number }[]; label: string; color?: string; height?: number }) {
   return (
     <ChartFrame label={label} height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }} barCategoryGap={2}>
         <CartesianGrid stroke={COLORS.grid} vertical={false} />
         <XAxis dataKey="bin" {...axisProps} interval={0} tick={{ fontSize: 9, fill: COLORS.axis }} />
         <YAxis {...axisProps} allowDecimals={false} />
-        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} formatter={(v) => [Number(v).toLocaleString(), "transactions"]} />
-        <Bar dataKey="count" fill={color} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(163,230,53,0.08)" }} formatter={(v) => [Number(v).toLocaleString(), "transactions"]} />
+        <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} isAnimationActive={false} />
       </BarChart>
     </ChartFrame>
   );
@@ -136,7 +136,7 @@ export function RadarCompare({ data, series, label }: { data: { metric: string; 
         <PolarAngleAxis dataKey="metric" tick={{ fill: COLORS.axis, fontSize: 11 }} />
         <PolarRadiusAxis domain={[0, 1]} tick={{ fill: COLORS.axis, fontSize: 9 }} angle={90} />
         {series.map((s, i) => (
-          <Radar key={s.key} dataKey={s.key} name={s.name} stroke={SERIES[i % SERIES.length]} fill={SERIES[i % SERIES.length]} fillOpacity={0.12} isAnimationActive={false} />
+          <Radar key={s.key} dataKey={s.key} name={s.name} stroke={SERIES[i % SERIES.length]} fill={SERIES[i % SERIES.length]} fillOpacity={0.14} isAnimationActive={false} />
         ))}
         <Legend wrapperStyle={{ fontSize: 11 }} />
         <Tooltip contentStyle={tooltipStyle} formatter={(v) => (typeof v === "number" ? v.toFixed(3) : String(v))} />

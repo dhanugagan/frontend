@@ -7,6 +7,7 @@ import { DonutChart, HistogramChart } from "@/components/charts";
 import { Column, DataTable, Pagination } from "@/components/DataTable";
 import { Field, SearchInput, SegmentedControl, Select } from "@/components/Inputs";
 import { MetricCard } from "@/components/MetricCard";
+import { TiltCard } from "@/components/MotionPrimitives";
 import { ErrorState, Notice, Spinner } from "@/components/States";
 import { UploadArea } from "@/components/UploadArea";
 import { useApp } from "@/hooks/AppContext";
@@ -28,7 +29,7 @@ export default function PredictionPage() {
   return (
     <>
       <PageHeader title="Fraud Prediction" description="Run verified models on existing transactions or score a CSV batch. Graph models need real graph relationships, so arbitrary manual transactions are not supported." />
-      <Notice tone="warn" title="Indicators, not proof">Predictions are model outputs at each model's own validated threshold. They support investigation and do not establish that a transaction is fraudulent.</Notice>
+      <Notice tone="warn" title="Indicators, not proof">Predictions are model outputs at each model&apos;s own validated threshold. They support investigation and do not establish that a transaction is fraudulent.</Notice>
 
       <Card className="mt-4">
         <CardHeader title="Models available for inference" subtitle="A model is usable only after every backend compatibility check passes" actions={<Button size="sm" loading={modelsLoading} onClick={() => verifyModels()}>Re-check</Button>} />
@@ -36,7 +37,7 @@ export default function PredictionPage() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {available.map((m) => <ModelCard key={m.model_id} m={m} />)}
             {unavailable.map((m) => <ModelCard key={m.model_id} m={m} />)}
-            {models && models.length === 0 && <p className="text-sm text-slate-400 md:col-span-3">The backend lists no models. The final package was not found or is incomplete — see <a className="text-brand-300 underline" href="/models">Model Performance</a>.</p>}
+            {models && models.length === 0 && <p className="text-sm text-silver md:col-span-3">The backend lists no models. The final package was not found or is incomplete — see <a className="text-brand-400 underline" href="/models">Model Performance</a>.</p>}
           </div>
         )}
       </Card>
@@ -54,15 +55,15 @@ export default function PredictionPage() {
 function ModelCard({ m }: { m: ModelStatus }) {
   const ok = m.status === "available";
   return (
-    <div className={`rounded-lg border p-3 ${ok ? "border-safe-400/20 bg-safe-400/[0.04]" : "border-fraud-400/20 bg-fraud-400/[0.04]"}`}>
+    <TiltCard intensity={4} glowColor={ok ? "rgba(163,230,53,0.12)" : "rgba(251,113,133,0.12)"} className={`p-3.5 ${ok ? "border-brand-500/25 bg-ink-750/35" : "border-fraud-400/20 bg-fraud-400/[0.04]"}`}>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0"><p className="truncate text-sm font-medium text-slate-100">{m.title}</p><p className="text-[11px] text-slate-400">{m.kind === "gnn" ? "graph model · needs graph context" : "tabular baseline"} · {m.feature_set ?? "?"} features</p></div>
+        <div className="min-w-0"><p className="truncate text-sm font-medium text-cloud">{m.title}</p><p className="text-[11px] text-silver">{m.kind === "gnn" ? "graph model · needs graph context" : "tabular baseline"} · {m.feature_set ?? "?"} features</p></div>
         <Badge tone={ok ? "safe" : "fraud"} dot>{ok ? "available" : "unavailable"}</Badge>
       </div>
-      {ok ? <p className="mt-2 text-xs text-slate-400">threshold <span className="num text-slate-200">{fmtMetric(m.threshold, 4)}</span> · {m.seeds.length} seed{m.seeds.length === 1 ? "" : "s"} · stored-score reproduction: {m.reproduction_of_stored_scores.replace(/_/g, " ")}</p> : (
-        <details className="mt-2 text-xs text-slate-300"><summary className="cursor-pointer text-fraud-300">Why unavailable</summary><ul className="mt-1 list-disc space-y-1 pl-4 text-slate-400">{m.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul></details>
+      {ok ? <p className="mt-2 text-xs text-silver">threshold <span className="num text-cloud">{fmtMetric(m.threshold, 4)}</span> · {m.seeds.length} seed{m.seeds.length === 1 ? "" : "s"} · stored-score reproduction: {m.reproduction_of_stored_scores.replace(/_/g, " ")}</p> : (
+        <details className="mt-2 text-xs text-cloud/85"><summary className="cursor-pointer text-fraud-300">Why unavailable</summary><ul className="mt-1 list-disc space-y-1 pl-4 text-silver">{m.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul></details>
       )}
-    </div>
+    </TiltCard>
   );
 }
 
@@ -93,7 +94,7 @@ function TransactionMode({ available }: { available: ModelStatus[] }) {
             <Field label="Transaction ID"><SearchInput label="Transaction ID" value={id} onChange={(v) => { setId(v); setIdErr(null); }} onSubmit={run} inputMode="numeric" placeholder="e.g. 230425980" /></Field>
             {idErr && <p role="alert" className="text-[11px] text-fraud-300">{idErr}</p>}
             <fieldset><legend className="eyebrow mb-1.5">Models (none selected = all available)</legend>
-              <div className="space-y-1.5">{available.map((m) => <label key={m.model_id} className="flex cursor-pointer items-center gap-2 text-sm text-slate-200"><input type="checkbox" className="accent-cyan-400" checked={picked.includes(m.model_id)} onChange={() => toggle(m.model_id)} /> {m.title}</label>)}</div>
+              <div className="space-y-1.5">{available.map((m) => <label key={m.model_id} className="flex cursor-pointer items-center gap-2 text-sm text-cloud/90"><input type="checkbox" className="accent-brand-500" checked={picked.includes(m.model_id)} onChange={() => toggle(m.model_id)} /> {m.title}</label>)}</div>
             </fieldset>
             <Button variant="primary" className="w-full" loading={busy} onClick={run} icon={<Play className="h-4 w-4" />}>Run prediction</Button>
           </div>
@@ -101,25 +102,25 @@ function TransactionMode({ available }: { available: ModelStatus[] }) {
       </Card>
       <Card>
         <CardHeader title="Result" />
-        {busy ? <Spinner label="Scoring…" /> : err ? <ErrorState error={err} onRetry={run} /> : !res ? <p className="py-10 text-center text-sm text-slate-400">Results appear here.</p> : (
+        {busy ? <Spinner label="Scoring…" /> : err ? <ErrorState error={err} onRetry={run} /> : !res ? <p className="py-10 text-center text-sm text-silver">Results appear here.</p> : (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3 text-sm"><span className="num text-lg font-semibold text-white">{res.tx_id}</span><span className="text-slate-400">time step {res.time_step}</span><span className="text-xs text-slate-500">dataset ground truth</span><GroundTruthBadge label={res.ground_truth_label} /></div>
+            <div className="flex flex-wrap items-center gap-3 text-sm"><span className="num text-lg font-semibold text-cloud">{res.tx_id}</span><span className="text-silver">time step {res.time_step}</span><span className="text-xs text-silver">dataset ground truth</span><GroundTruthBadge label={res.ground_truth_label} /></div>
             <Notice tone="info" title="Evaluation context">{res.evaluation_context}</Notice>
             <div className="grid gap-3 md:grid-cols-2">
               {res.predictions.map((p) => (
-                <div key={p.model_id} className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
-                  <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-medium text-slate-100">{p.model_title}</p><p className="text-[11px] text-slate-500">{p.used_graph_context ? "graph context used" : "features only"}</p></div><PredictionBadge label={p.predicted_label} /></div>
+                <div key={p.model_id} className="rounded-xl border border-white/[0.08] bg-ink-950/60 p-3">
+                  <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-medium text-cloud">{p.model_title}</p><p className="text-[11px] text-silver">{p.used_graph_context ? "graph context used" : "features only"}</p></div><PredictionBadge label={p.predicted_label} /></div>
                   <div className="relative mt-3 h-2 rounded-full bg-white/10" aria-label={`probability ${fmtProb(p.probability)} against threshold ${fmtMetric(p.threshold, 3)}`}>
-                    <div className={`h-full rounded-full ${p.predicted_label === "illicit" ? "bg-fraud-400" : "bg-safe-400"}`} style={{ width: `${p.probability * 100}%` }} />
-                    <div className="absolute -top-1 h-4 w-0.5 bg-white/80" style={{ left: `${p.threshold * 100}%` }} title={`threshold ${fmtMetric(p.threshold, 4)}`} />
+                    <div className={`h-full rounded-full ${p.predicted_label === "illicit" ? "bg-fraud-400" : "bg-brand-500"}`} style={{ width: `${p.probability * 100}%` }} />
+                    <div className="absolute -top-1 h-4 w-0.5 bg-cloud/85" style={{ left: `${p.threshold * 100}%` }} title={`threshold ${fmtMetric(p.threshold, 4)}`} />
                   </div>
-                  <p className="mt-2 text-xs text-slate-400">probability <span className="num text-slate-100">{fmtProb(p.probability)}</span> · threshold <span className="num">{fmtMetric(p.threshold, 4)}</span></p>
-                  {p.per_seed_probability && <p className="mt-1 text-[11px] text-slate-500">seeds: {Object.entries(p.per_seed_probability).map(([s, v]) => `${s}: ${fmtProb(v)}`).join(" · ")}</p>}
+                  <p className="mt-2 text-xs text-silver">probability <span className="num text-cloud">{fmtProb(p.probability)}</span> · threshold <span className="num">{fmtMetric(p.threshold, 4)}</span></p>
+                  {p.per_seed_probability && <p className="mt-1 text-[11px] text-silver">seeds: {Object.entries(p.per_seed_probability).map(([s, v]) => `${s}: ${fmtProb(v)}`).join(" · ")}</p>}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-400">In-degree {res.graph.in_degree} · out-degree {res.graph.out_degree}{res.graph.note ? ` — ${res.graph.note}` : ""}</p>
-            <p className="text-[11px] text-slate-500">{res.note}</p>
+            <p className="text-xs text-silver">In-degree {res.graph.in_degree} · out-degree {res.graph.out_degree}{res.graph.note ? ` — ${res.graph.note}` : ""}</p>
+            <p className="text-[11px] text-silver">{res.note}</p>
           </div>
         )}
       </Card>
@@ -173,7 +174,7 @@ function CsvMode({ available }: { available: ModelStatus[] }) {
             <div>
               <UploadArea file={file} onFile={onFile} maxBytes={maxBytes} disabled={busy} progress={progress} />
               {problems.length > 0 && <div role="alert" className="mt-3 space-y-1 rounded-lg border border-fraud-400/25 bg-fraud-400/[0.06] p-3 text-xs text-fraud-200">{problems.map((p) => <p key={p} className="flex gap-2"><FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0" />{p}</p>)}</div>}
-              {notes.map((n) => <p key={n} className="mt-2 text-xs text-slate-400">{n}</p>)}
+              {notes.map((n) => <p key={n} className="mt-2 text-xs text-silver">{n}</p>)}
             </div>
             <div className="space-y-3">
               <Field label="Model"><Select label="Model" value={model} onChange={setModel} options={available.map((m) => ({ value: m.model_id, label: m.title }))} /></Field>
@@ -187,7 +188,7 @@ function CsvMode({ available }: { available: ModelStatus[] }) {
           </div>
         )}
       </Card>
-      {err && <Card><ErrorState error={err} /> {Array.isArray((err.details as { missing_columns?: string[] } | undefined)?.missing_columns) && <p className="text-center text-xs text-slate-400">Missing columns: {((err.details as { missing_columns: string[] }).missing_columns).slice(0, 8).join(", ")}…</p>}</Card>}
+      {err && <Card><ErrorState error={err} /> {Array.isArray((err.details as { missing_columns?: string[] } | undefined)?.missing_columns) && <p className="text-center text-xs text-silver">Missing columns: {((err.details as { missing_columns: string[] }).missing_columns).slice(0, 8).join(", ")}…</p>}</Card>}
       {res && <CsvResults res={res} />}
     </div>
   );
@@ -206,9 +207,9 @@ function CsvResults({ res }: { res: CsvPredictionResponse }) {
   const s = res.summary;
   const hist = useMemo(() => histogram(res.results.map((r) => r.probability), 10), [res]);
   const cols: Column<CsvResultRow>[] = [
-    { key: "row", header: "Row", render: (r) => <span className="num text-slate-400">{r.row}</span> },
-    { key: "tx", header: "Transaction", render: (r) => <span className="num text-slate-100">{r.tx_id}</span> },
-    { key: "p", header: "Probability", render: (r) => <span className="num">{fmtProb(r.probability)}</span> },
+    { key: "row", header: "Row", render: (r) => <span className="num text-silver">{r.row}</span> },
+    { key: "tx", header: "Transaction", render: (r) => <span className="num font-medium text-cloud">{r.tx_id}</span> },
+    { key: "p", header: "Probability", render: (r) => <span className="num text-cloud">{fmtProb(r.probability)}</span> },
     { key: "pred", header: "Predicted", render: (r) => <PredictionBadge label={r.predicted_label} /> },
     { key: "gt", header: "Dataset label", render: (r) => <GroundTruthBadge label={r.ground_truth_label} /> },
   ];
@@ -231,7 +232,7 @@ function CsvResults({ res }: { res: CsvPredictionResponse }) {
           <div className="mb-2 flex flex-wrap items-end gap-3">
             <Field label="Predicted"><Select label="Filter predicted label" value={label} onChange={(v) => setLabel(v as typeof label)} options={[{ value: "", label: "All" }, { value: "illicit", label: "Illicit" }, { value: "licit", label: "Licit" }]} /></Field>
             <Field label="Min. probability (0–1)"><input aria-label="Minimum probability" className="input w-28" inputMode="decimal" value={minP} onChange={(e) => setMinP(e.target.value)} placeholder="0.0" /></Field>
-            <Field label="Transaction ID"><SearchInput label="Filter by transaction id" value={q} onChange={setQ} placeholder="contains…" className="w-44" /></Field>
+            <Field label="Transaction ID"><SearchInput label="Filter by transaction id" value={q} onChange={setQ} placeholder="contains…" className="w-full sm:w-44" /></Field>
           </div>
         </div>
         <DataTable caption="Batch prediction results" columns={cols} rows={view} rowKey={(r) => r.row} />
@@ -240,11 +241,11 @@ function CsvResults({ res }: { res: CsvPredictionResponse }) {
       {res.rejected_total > 0 && (
         <Card>
           <CardHeader title={`Rejected rows (${fmtInt(res.rejected_total)})`} subtitle="These rows were not scored" />
-          <ul className="max-h-48 space-y-1 overflow-y-auto text-xs text-slate-300">{res.rejected.map((r, i) => <li key={i}><span className="num text-slate-500">row {r.row}</span> {r.tx_id !== undefined && <span className="num">· {r.tx_id}</span>} — {r.reason}</li>)}</ul>
-          {res.rejected_total > res.rejected.length && <p className="mt-2 text-[11px] text-slate-500">Showing the first {res.rejected.length}.</p>}
+          <ul className="max-h-48 space-y-1 overflow-y-auto text-xs text-cloud/85">{res.rejected.map((r, i) => <li key={i}><span className="num text-silver">row {r.row}</span> {r.tx_id !== undefined && <span className="num">· {r.tx_id}</span>} — {r.reason}</li>)}</ul>
+          {res.rejected_total > res.rejected.length && <p className="mt-2 text-[11px] text-silver">Showing the first {res.rejected.length}.</p>}
         </Card>
       )}
-      <p className="text-center text-[11px] text-slate-500">{res.disclaimer}</p>
+      <p className="text-center text-[11px] text-silver">{res.disclaimer}</p>
     </>
   );
 }

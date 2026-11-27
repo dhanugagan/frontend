@@ -7,6 +7,7 @@ import { Card, PageHeader } from "@/components/Card";
 import { DetailPanel, KV } from "@/components/DetailPanel";
 import { GraphFilters, GraphView, LayoutName } from "@/components/GraphView";
 import { Field, SearchInput, Select, Toggle } from "@/components/Inputs";
+import { TiltCard } from "@/components/MotionPrimitives";
 import { EmptyState, ErrorState, Notice, Spinner } from "@/components/States";
 import { useApp } from "@/hooks/AppContext";
 import { useAsync } from "@/hooks/useAsync";
@@ -107,14 +108,14 @@ export default function GraphPage() {
       <PageHeader title="Graph Explorer" description="Explore bounded neighbourhoods of the transaction graph. Edges point from a transaction to the transactions that spend its outputs (txId1 → txId2). The whole graph is never loaded." />
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         {[{ l: "Graph nodes", v: stats.data?.nodes }, { l: "Graph edges", v: stats.data?.edges }, { l: "Median in / out degree", v: stats.data ? `${stats.data.in_degree.median} / ${stats.data.out_degree.median}` : undefined }, { l: "Max in / out degree", v: stats.data ? `${stats.data.in_degree.max} / ${stats.data.out_degree.max}` : undefined }].map((x) => (
-          <div key={x.l} className="card px-4 py-3"><p className="eyebrow">{x.l}</p><p className="num mt-1 text-lg font-semibold text-white">{stats.error ? "—" : typeof x.v === "number" ? fmtInt(x.v) : x.v ?? "…"}</p></div>
+          <TiltCard key={x.l} intensity={4} className="px-4 py-3.5"><p className="eyebrow">{x.l}</p><p className="num mt-1 text-lg font-bold text-cloud">{stats.error ? "—" : typeof x.v === "number" ? fmtInt(x.v) : x.v ?? "…"}</p></TiltCard>
         ))}
       </div>
       {stats.error && <div className="mb-4"><ErrorState error={stats.error} compact onRetry={stats.reload} /></div>}
 
       <Card className="mb-4">
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="Transaction ID"><div className="flex gap-2"><SearchInput label="Transaction ID" value={txInput} onChange={(v) => { setTxInput(v); setInputErr(null); }} onSubmit={() => load(txInput, true)} placeholder="e.g. 230425980" inputMode="numeric" className="w-52" /><Button variant="primary" loading={busy} onClick={() => load(txInput, true)} icon={<Network className="h-4 w-4" />}>Load</Button></div>{inputErr && <span role="alert" className="mt-1 block text-[11px] text-fraud-300">{inputErr}</span>}</Field>
+          <Field label="Transaction ID"><div className="flex gap-2"><SearchInput label="Transaction ID" value={txInput} onChange={(v) => { setTxInput(v); setInputErr(null); }} onSubmit={() => load(txInput, true)} placeholder="e.g. 230425980" inputMode="numeric" className="min-w-0 flex-1 sm:w-52 sm:flex-none" /><Button variant="primary" loading={busy} onClick={() => load(txInput, true)} icon={<Network className="h-4 w-4" />}>Load</Button></div>{inputErr && <span role="alert" className="mt-1 block text-[11px] text-fraud-300">{inputErr}</span>}</Field>
           <Field label="Depth"><Select label="Depth" value={depth} onChange={setDepth} options={Array.from({ length: maxDepthLimit }, (_, i) => ({ value: String(i + 1), label: `${i + 1} hop${i ? "s" : ""}` }))} /></Field>
           <Field label="Direction"><Select label="Direction" value={direction} onChange={(v) => setDirection(v as typeof direction)} options={[{ value: "both", label: "Parents + children" }, { value: "in", label: "Parents (incoming)" }, { value: "out", label: "Children (outgoing)" }]} /></Field>
           <Field label="Max nodes" hint={`≤ ${maxNodesLimit}`}><Select label="Max nodes" value={maxNodes} onChange={setMaxNodes} options={[25, 50, 100, 200, 300, 500].filter((n) => n <= maxNodesLimit).map((n) => ({ value: String(n), label: String(n) }))} /></Field>
@@ -138,22 +139,22 @@ export default function GraphPage() {
               <Toggle label={`Unknown ${counts.unknown}`} checked={filters.unknown} onChange={(v) => setFilters((f) => ({ ...f, unknown: v }))} />
               {overlay && <Toggle label={`Predicted illicit only (${counts.predIll})`} checked={filters.predictedIllicitOnly} onChange={(v) => setFilters((f) => ({ ...f, predictedIllicitOnly: v }))} />}
             </div>
-            <div className="flex items-center gap-2"><SearchInput label="Highlight a loaded transaction" value={find} onChange={setFind} placeholder="Highlight ID…" className="w-40" /><Button size="sm" variant="ghost" onClick={() => setLayoutVersion((v) => v + 1)} icon={<Maximize2 className="h-3.5 w-3.5" />}>Re-layout</Button>{nodes.size > 0 && <Button size="sm" variant="ghost" onClick={clear}>Clear</Button>}</div>
+            <div className="flex flex-wrap items-center gap-2"><SearchInput label="Highlight a loaded transaction" value={find} onChange={setFind} placeholder="Highlight ID…" className="w-full sm:w-40" /><Button size="sm" variant="ghost" onClick={() => setLayoutVersion((v) => v + 1)} icon={<Maximize2 className="h-3.5 w-3.5" />}>Re-layout</Button>{nodes.size > 0 && <Button size="sm" variant="ghost" onClick={clear}>Clear</Button>}</div>
           </div>
-          <div className="relative h-[560px] bg-ink-950/60">
+          <div className="relative h-[420px] sm:h-[520px] lg:h-[560px] bg-ink-950/60">
             {nodes.size === 0 ? (busy ? <Spinner label="Loading neighbourhood…" /> : <EmptyState icon={<Network className="h-5 w-5" />} title="No graph loaded" description="Enter a transaction ID above. Double-click a node to expand its neighbourhood; click for details." />) : (
               <GraphView nodes={nodeList} edges={edgeList} selectedId={selectedId} centerId={centerId} highlightIds={highlight} filters={filters} layout={layout} layoutVersion={layoutVersion} onSelect={(id) => { setSelectedId(id); setSelectedEdge(null); }} onExpand={expand} onSelectEdge={setSelectedEdge} />
             )}
             {busy && nodes.size > 0 && <div className="absolute right-3 top-3"><Badge tone="brand">updating…</Badge></div>}
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-white/[0.06] px-4 py-2 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-white/[0.07] px-4 py-2 text-[11px] text-silver">
             <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-fraud-400" /> illicit (ground truth)</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-safe-400" /> licit</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-slate-500" /> unknown</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full border-2 border-model-400" /> predicted illicit (overlay)</span>
-            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full border-2 border-brand-400" /> centre</span>
+            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-model-500" /> licit</span>
+            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-steel" /> unknown</span>
+            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full border-2 border-brand-200" /> predicted illicit (overlay)</span>
+            <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full border-2 border-brand-500" /> centre</span>
             <span>edge: transaction flow →</span>
-            <span className="ml-auto num text-slate-300">{nodes.size} nodes · {edges.size} edges loaded</span>
+            <span className="ml-auto num text-cloud">{nodes.size} nodes · {edges.size} edges loaded</span>
           </div>
         </Card>
 
@@ -189,8 +190,8 @@ function NodePanel({ node, onExpand, onClose, onOpenExplorer, onFocus }: { node:
       <p className="eyebrow mb-2 mt-5">Neighbours {nb.data ? `(${nb.data.total})` : ""}</p>
       {nb.error ? <ErrorState error={nb.error} compact onRetry={nb.reload} /> : !nb.data ? <Spinner /> : (
         <>
-          <ul className="space-y-1">{nb.data.items.map((n) => <li key={`${n.relation}-${n.tx_id}`}><button onClick={() => onFocus(n.tx_id)} className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-white/5"><span className="num text-slate-100">{n.tx_id}</span><span className="flex items-center gap-2"><span className="text-slate-500">{n.relation}</span><GroundTruthBadge label={n.ground_truth_label} /></span></button></li>)}</ul>
-          {nb.data.pages > 1 && <div className="mt-2 flex items-center justify-between text-xs text-slate-400"><Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button><span className="num">{page}/{nb.data.pages}</span><Button size="sm" variant="ghost" disabled={page >= nb.data.pages} onClick={() => setPage(page + 1)}>Next</Button></div>}
+          <ul className="space-y-1">{nb.data.items.map((n) => <li key={`${n.relation}-${n.tx_id}`}><button onClick={() => onFocus(n.tx_id)} className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-brand-500/[0.06]"><span className="num text-cloud">{n.tx_id}</span><span className="flex items-center gap-2"><span className="text-silver">{n.relation}</span><GroundTruthBadge label={n.ground_truth_label} /></span></button></li>)}</ul>
+          {nb.data.pages > 1 && <div className="mt-2 flex items-center justify-between text-xs text-silver"><Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button><span className="num">{page}/{nb.data.pages}</span><Button size="sm" variant="ghost" disabled={page >= nb.data.pages} onClick={() => setPage(page + 1)}>Next</Button></div>}
         </>
       )}
     </DetailPanel>

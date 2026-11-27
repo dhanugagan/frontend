@@ -1,18 +1,29 @@
 import type { LabelName, Severity } from "@/types/api";
 
 export const COLORS = {
-  licit: "#4ade80",
-  illicit: "#fb7185",
-  unknown: "#64748b",
-  brand: "#22d3ee",
-  model: "#a78bfa",
-  warn: "#fbbf24",
-  grid: "rgba(148,163,184,0.12)",
-  axis: "#94a3b8",
+  licit: "#84cc16", // Lime Green
+  illicit: "#fb7185", // Coral Rose (distinct semantic fraud alert state)
+  unknown: "#71717a", // Neutral Zinc Steel
+  brand: "#a3e635", // Primary Lime Green
+  model: "#ffffff", // Pure White
+  warn: "#f59e0b",
+  cloud: "#ffffff", // Pure White
+  silver: "#b4b8c2", // Crisp Silver
+  grid: "rgba(255,255,255,0.09)",
+  axis: "#b4b8c2",
 };
 
-export const LABEL_COLOR: Record<LabelName, string> = { licit: COLORS.licit, illicit: COLORS.illicit, unknown: COLORS.unknown };
-export const SEVERITY_COLOR: Record<Severity, string> = { critical: "#f43f5e", high: "#fb923c", medium: "#fbbf24" };
+export const LABEL_COLOR: Record<LabelName, string> = {
+  licit: COLORS.licit,
+  illicit: COLORS.illicit,
+  unknown: COLORS.unknown,
+};
 
-/** Distinct, colour-blind-friendly series colours for model comparisons. */
-export const SERIES = ["#22d3ee", "#a78bfa", "#fb7185", "#fbbf24", "#4ade80", "#38bdf8", "#f472b6", "#fb923c"];
+export const SEVERITY_COLOR: Record<Severity, string> = {
+  critical: "#f43f5e",
+  high: "#fb923c",
+  medium: "#f59e0b",
+};
+
+/** High-contrast chart series harmonized with Lime Green and Pure White. */
+export const SERIES = ["#a3e635", "#ffffff", "#84cc16", "#fb7185", "#f59e0b", "#d9f99d", "#b4b8c2", "#65a30d"];

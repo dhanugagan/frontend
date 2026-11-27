@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
-  server: { port: 5173 },
+  server: { host: "0.0.0.0", port: 3000, allowedHosts: true },
   build: {
     chunkSizeWarningLimit: 900,
     rollupOptions: { output: { manualChunks: { charts: ["recharts"], graph: ["cytoscape"], vendor: ["react", "react-dom", "react-router-dom"] } } },
